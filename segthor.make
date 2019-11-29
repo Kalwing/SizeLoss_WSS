@@ -102,7 +102,7 @@ data/SEGTHOR-aug-tiny: data/SEGTHOR-Aug
 
 # Training
 $(SIZES): OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1),\
-	('NaivePenalty', {'idc': [1]}, 'TagBounds', {'values': {1: [60, 9000]}, 'idc': [1]}, 'soft_size', 1e-2)]"
+	('NaivePenalty', {'idc': [1]}, 'TagBounds', {'values': {1: [230, 7800]}, 'idc': [1]}, 'soft_size', 1e-2)]"
 # -losses: List of list of (loss_name, loss_params, bounds_name, bounds_params, fn, weight)"
 # --tentative of common bounds
 # Idc is for filtering, I don't quite get why we would want it but It's everywhere so..
