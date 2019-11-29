@@ -1,8 +1,9 @@
 numpy
-torch>=0.4
+pytorch>=0.4
 torchvision
 nibabel
 SimpleITK
 tqdm
 scikit-image
 pandas
+

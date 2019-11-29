@@ -241,7 +241,6 @@ class PatientSampler(Sampler):
         # Might be needed in case of escape sequence fuckups
         # self.grp_regex = bytes(grp_regex, "utf-8").decode('unicode_escape')
         self.grp_regex = grp_regex
-
         # Configure the shuffling function
         self.shuffle: bool = shuffle
         self.shuffle_fn: Callable = (lambda x: random.sample(x, len(x))) if self.shuffle else id_
@@ -253,6 +252,7 @@ class PatientSampler(Sampler):
 
         stems: List[str] = [Path(filename).stem for filename in filenames]  # avoid matching the extension
         matches: List[Match] = map_(grouping_regex.match, stems)
+        assert np.all(np.array(matches) != None), F"regex:{self.grp_regex}\n stems{ stems }"
         patients: List[str] = [match.group(1) for match in matches]
 
         unique_patients: List[str] = list(set(patients))

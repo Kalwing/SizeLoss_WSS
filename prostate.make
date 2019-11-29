@@ -2,7 +2,7 @@ CC = python3.7
 
 # CFLAGS = -O
 # DEBUG = --debug
-EPC = 200
+EPC = 50
 # EPC = 5
 
 
@@ -11,9 +11,10 @@ NET = ResidualUNet
 B_DATA = [('img', png_transform, False), ('gt', gt_transform, True)]
 
 SIZES = results/prostate/sizeloss_e results/prostate/sizeloss_r
-TRN = results/prostate/fs results/prostate/partial results/prostate/presize \
-	results/prostate/sizeloss_r \
-	results/prostate/loose results/prostate/presize_upper
+TRN = results/prostate/sizeloss_e
+	# results/prostate/fs results/prostate/partial results/prostate/presize \
+	# results/prostate/sizeloss_r \
+	# results/prostate/presize_upper
 	# results/prostate/3d_sizeloss
 
 
@@ -103,6 +104,13 @@ data/PROSTATE-aug-tiny: data/PROSTATE-Aug
 # Training
 $(SIZES): OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1),\
 	('NaivePenalty', {'idc': [1]}, 'TagBounds', {'values': {1: [60, 9000]}, 'idc': [1]}, 'soft_size', 1e-2)]"
+# -losses: List of list of (loss_name, loss_params, bounds_name, bounds_params, fn, weight)"
+# --tentative of common bounds
+# Idc is for filtering, I don't quite get why we would want it but It's everywhere so..
+# From what i get from l.113 in main.py, 1e-2, the weight, is the lambda of the expression.
+results/prostate/loose: OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1),\
+	('NaivePenalty', {'idc': [1]}, 'TagBounds', {'values': {1: [1, 65000]}, 'idc': [1]}, 'soft_size', 1e-2)]"
+# --Full supervision
 results/prostate/fs: OPT = --losses="[('CrossEntropy', {'idc': [0, 1]}, None, None, None, 1)]"
 results/prostate/partial: OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1)]"
 results/prostate/presize: OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1),\
@@ -130,7 +138,7 @@ results/prostate/sizeloss_c: data/PROSTATE-Aug/train/centroid data/PROSTATE-Aug/
 results/prostate/sizeloss_c: DATA = --folders="$(B_DATA)+[('centroid', gt_transform, True), ('centroid', gt_transform, True)]"
 
 results/prostate/sizeloss_r: data/PROSTATE-Aug/train/random data/PROSTATE-Aug/val/random
-results/prostate/sizeloss_r: DATA = --folders="$(B_DATA)+[('random', gt_transform, True), ('random', gt_transform, True)]"
+results/prostate/sizeloss_r: DATA = --folders="$(B_DATA)+[('erosion', gt_transform, True), ('erosion', gt_transform, True)]"
 
 results/prostate/presize: data/PROSTATE-Aug/train/random data/PROSTATE-Aug/val/random
 results/prostate/presize: DATA = --folders="$(B_DATA)+[('random', gt_transform, True), ('random', gt_transform, True)]"
@@ -147,7 +155,7 @@ results/prostate/3d_sizeloss: DATA = --folders="$(B_DATA)+[('random', gt_transfo
 
 $(TRN):
 	rm -rf $@_tmp
-	$(CC) $(CFLAGS) main.py --dataset=$(dir $(<D)) --batch_size=4 --group --schedule \
+	$(CC) $(CFLAGS) main.py --dataset=$(dir $(<D)) --batch_size=2 --group --schedule \
 		--n_epoch=$(EPC) --workdir=$@_tmp --csv=metrics.csv --n_class=2 --metric_axis=1 \
 		--grp_regex="$(G_RGX)" --network=$(NET) $(OPT) $(DATA) $(DEBUG)
 	mv $@_tmp $@
