@@ -11,8 +11,8 @@ G_RGX = (\d+_\w+__\d+)_\d+
 NET = ResidualUNet
 B_DATA = [('img', png_transform, False), ('gt', gt_transform, True)]
 
-SIZES = results/segthor/sizeloss_e results/segthor/sizeloss_r
-TRN = results/segthor/sizeloss_e
+SIZES = results/segthor/sizeloss_e results/segthor/sizeloss_r results/segthor/sizeloss_fs
+TRN = results/segthor/sizeloss_fs results/segthor/fs
 	# results/segthor/fs results/segthor/partial results/segthor/presize \
 	# results/segthor/sizeloss_r \
 	# results/segthor/presize_upper
@@ -107,8 +107,6 @@ $(SIZES): OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1),\
 # --tentative of common bounds
 # Idc is for filtering, I don't quite get why we would want it but It's everywhere so..
 # From what i get from l.113 in main.py, 1e-2, the weight, is the lambda of the expression.
-results/segthor/loose: OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1),\
-	('NaivePenalty', {'idc': [1]}, 'TagBounds', {'values': {1: [1, 65000]}, 'idc': [1]}, 'soft_size', 1e-2)]"
 # --Full supervision
 results/segthor/fs: OPT = --losses="[('CrossEntropy', {'idc': [0, 1]}, None, None, None, 1)]"
 results/segthor/partial: OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1)]"
@@ -124,6 +122,9 @@ results/segthor/3d_sizeloss: OPT = --losses="[('CrossEntropy', {'idc': [1]}, Non
 results/segthor/3d_sizeloss: NET = ENet
 
 
+results/segthor/sizeloss_fs: data/SEGTHOR-Aug/train/gt data/SEGTHOR-Aug/val/gt
+results/segthor/sizeloss_fs: DATA = --folders="$(B_DATA)+[('gt', gt_transform, True)]"
+
 results/segthor/fs: data/SEGTHOR-Aug/train/gt data/SEGTHOR-Aug/val/gt
 results/segthor/fs: DATA = --folders="$(B_DATA)+[('gt', gt_transform, True)]"
 
@@ -137,7 +138,7 @@ results/segthor/sizeloss_c: data/SEGTHOR-Aug/train/centroid data/SEGTHOR-Aug/val
 results/segthor/sizeloss_c: DATA = --folders="$(B_DATA)+[('centroid', gt_transform, True), ('centroid', gt_transform, True)]"
 
 results/segthor/sizeloss_r: data/SEGTHOR-Aug/train/random data/SEGTHOR-Aug/val/random
-results/segthor/sizeloss_r: DATA = --folders="$(B_DATA)+[('erosion', gt_transform, True), ('erosion', gt_transform, True)]"
+results/segthor/sizeloss_r: DATA = --folders="$(B_DATA)+[('random', gt_transform, True), ('random', gt_transform, True)]"
 
 results/segthor/presize: data/SEGTHOR-Aug/train/random data/SEGTHOR-Aug/val/random
 results/segthor/presize: DATA = --folders="$(B_DATA)+[('random', gt_transform, True), ('random', gt_transform, True)]"
@@ -154,7 +155,7 @@ results/segthor/3d_sizeloss: DATA = --folders="$(B_DATA)+[('random', gt_transfor
 
 $(TRN):
 	rm -rf $@_tmp
-	$(CC) $(CFLAGS) main.py --dataset=$(dir $(<D)) --batch_size=2 --group --schedule \
+	$(CC) $(CFLAGS) main.py --dataset=$(dir $(<D)) --batch_size=4 --group --schedule \
 		--n_epoch=$(EPC) --workdir=$@_tmp --csv=metrics.csv --n_class=2 --metric_axis=1 \
 		--grp_regex="$(G_RGX)" --network=$(NET) $(OPT) $(DATA) $(DEBUG)
 	mv $@_tmp $@
