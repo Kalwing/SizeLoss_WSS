@@ -63,7 +63,7 @@ def save_slices(img_p: Path, gt_p: Path,
             slice_path,
             plugin='simpleitk', as_gray=True
         )
-        img.append(resize_(slice*255, (512, 512)))
+        img.append(resize_(slice*255, shape))
 
     assert np.all(np.array([image.shape for image in img]) == img[0].shape), F"All images aren't the same sizes for {p_id}"
     assert np.max(img) > 1
@@ -84,7 +84,7 @@ def save_slices(img_p: Path, gt_p: Path,
             plugin='simpleitk', as_gray=True
         )
         slice = slice/slice.max()  # T: I guess 1 is the max here, see l132
-        gt.append(resize_(slice, (512, 512)))
+        gt.append(resize_(slice, shape))
     assert np.all(np.array([image.shape for image in gt]) == gt[0].shape), F"All ground truths aren't the same sizes for {p_id}"
     try:
         gt = np.array(gt, dtype=np.uint8)
@@ -156,11 +156,13 @@ def save_slices(img_p: Path, gt_p: Path,
 
 
 def main(args: argparse.Namespace):
+    print("ARG:", args, args.shape)
     src_path: Path = Path(args.source_dir)
     dest_path: Path = Path(args.dest_dir)
 
     TRAIN_FOLDER = 'train_ancillary'
     VAL_FOLDER = 'val'
+    TEST_FOLDER = 'test'
     # Assume the cleaning up is done before calling the script
     assert src_path.exists()
     assert not dest_path.exists()
@@ -178,7 +180,6 @@ def main(args: argparse.Namespace):
     paths: List[Tuple[Path, Path]] = list(zip(img_paths, gt_paths))
 
     print(f"Found {len(img_paths)} pairs in total")
-    pprint(paths[:5])
 
     # T: Split those paths between training and val set
     validation_paths: List[Tuple[Path, Path]] = [
@@ -189,12 +190,15 @@ def main(args: argparse.Namespace):
         p for p in paths
         if str(p[0]).split('/')[-3] == TRAIN_FOLDER
     ]
+    test_paths: List[Tuple[Path, Path]] = [
+        p for p in paths
+        if str(p[0]).split('/')[-3] == TEST_FOLDER
+    ]
     assert set(validation_paths).isdisjoint(set(training_paths))
     assert len(validation_paths) > 0
     assert len(training_paths) > 0
 
     # assert len(paths) == (len(validation_paths) + len(training_paths))
-
     for mode, _paths, n_augment in zip(["train", "val"], [training_paths, validation_paths], [args.n_augment, 0]):
         img_paths, gt_paths = zip(*_paths)  # type: Tuple[Any, Any]
 
@@ -214,6 +218,26 @@ def main(args: argparse.Namespace):
         with open(os.path.join(dest_path, 'sizes.txt'), 'w') as fout:
             fout.write(F"2d sizes:\n\tmin:{sizes_2d_min.min()} \tmax:{sizes_2d_max.max()}\n")
             fout.write(F"3d sizes:\n\tmin:{sizes_3d.min()} \tmean:{sizes_3d.mean()} \tmax:{sizes_3d.max()}")
+    # T: Making Test Set
+    print(F"Generating test set in {dest_path}/test")
+    resize_: Callable = partial(resize, mode="constant", preserve_range=True, anti_aliasing=False)
+    for img_path, gt_path in test_paths:
+        print(img_path)
+        dest_dir = Path(dest_path, 'test')
+        print(img_path.name)
+        filename = img_path.name
+        for type, path in zip(['img', 'gt'], [img_path, gt_path]):
+            save_dir = Path(dest_dir, type)
+            save_dir.mkdir(parents=True, exist_ok=True)
+            img = imread(path)
+            if type == 'gt':
+                img = np.array(img, dtype=np.uint8)
+            else:
+                img = np.array(img, dtype=np.uint16)
+            img = resize_(img, args.shape)
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=UserWarning)
+                imsave(str(Path(save_dir, filename)), img)
 
 
 def get_args() -> argparse.Namespace:
@@ -223,7 +247,7 @@ def get_args() -> argparse.Namespace:
 
     parser.add_argument('--img_dir', type=str, default="IMG")
     parser.add_argument('--gt_dir', type=str, default="GT")
-    parser.add_argument('--shape', type=int, nargs="+", default=[256, 256])
+    parser.add_argument('--shape', type=int, nargs="+", default=(512, 512))
     parser.add_argument('--retain', type=int, default=10, help="Number of retained patient for the validation data")
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--n_augment', type=int, default=0, help="Number of augmentation to create per image, only for the training set")

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import os
 import numpy as np
-
+import PIL
 
 PATH = "./segthor_results/segthor/sizeloss_e/"
 print(os.listdir("."))
@@ -24,15 +24,15 @@ fig.suptitle("Ground Truth")
 fig1.suptitle("Prediction using common bounds at the last epoch")
 
 fig.savefig('tmp.png')
-img = plt.imread('tmp.png')
+img = PIL.Image.open('tmp.png')
 fig1.savefig('tmp.png')
-img1 = plt.imread('tmp.png')
+img1 = PIL.Image.open('tmp.png')
 plt.show()
 
 fig = plt.figure(figsize=(25, 20))
-height = img.shape[0]
-width = img.shape[1]
-final = np.zeros((2*height, width, img.shape[-1]))
+height = img.size[0]
+width = img.size[1]
+final = Image.new('RGB', (2*height, width, img.shape[-1]))
 print(final[0:height, 0:width].shape)
 final[:height, :width] = img
 final[height:2*height, :width] = img1
@@ -41,6 +41,6 @@ ax = plt.Axes(fig, [0., 0., 1., 1.])
 ax.set_axis_off()
 fig.add_axes(ax)
 
-ax.imshow(final)
-fig.savefig("comparison.png")
+im = PIL.Image.fromarray(final)
+im.save("comparison.png")
 os.remove('tmp.png')

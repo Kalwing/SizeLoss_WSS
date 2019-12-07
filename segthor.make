@@ -2,7 +2,7 @@ CC = python3.7
 
 # CFLAGS = -O
 # DEBUG = --debug
-EPC = 50
+EPC = 150
 # EPC = 5
 
 
@@ -12,7 +12,7 @@ NET = ResidualUNet
 B_DATA = [('img', png_transform, False), ('gt', gt_transform, True)]
 
 SIZES = results/segthor/sizeloss_e results/segthor/sizeloss_r results/segthor/sizeloss_fs
-TRN = results/segthor/sizeloss_fs results/segthor/fs
+TRN = results/segthor/sizeloss_e results/segthor/fs
 	# results/segthor/fs results/segthor/partial results/segthor/presize \
 	# results/segthor/sizeloss_r \
 	# results/segthor/presize_upper
@@ -61,8 +61,8 @@ data/thor: data/segthor.lineage data/segthor.zip
 
 
 # Weak labels generation
-weaks = data/SEGTHOR/train/centroid data/SEGTHOR/val/centroid \
-		data/SEGTHOR/train/erosion data/SEGTHOR/val/erosion \
+weaks = data/SEGTHOR/train/centroid data/SEGTHOR/val/centroid\
+		data/SEGTHOR/train/erosion data/SEGTHOR/val/erosion\
 		data/SEGTHOR/train/random data/SEGTHOR/val/random
 weak: $(weaks)
 
@@ -74,7 +74,6 @@ $(weaks): data/SEGTHOR
 	rm -rf $@_tmp
 	$(CC) $(CFLAGS) gen_weak.py --selected_class 1 --filling 1 --base_folder=$(@D) --save_subfolder=$(@F)_tmp $(OPT)
 	mv $@_tmp $@
-
 
 
 data/SEGTHOR-Aug/train/gt data/SEGTHOR-Aug/val/gt: data/SEGTHOR-Aug
@@ -161,15 +160,15 @@ $(TRN):
 	mv $@_tmp $@
 
 
-# # Inference
-# INFR = results/segthor/inference/fs_sanity results/segthor/inference/size_sanity
-# results/segthor/inference/fs_sanity: results/segthor/fs data/SEGTHOR/val
-# results/segthor/inference/size_sanity: results/segthor/sizeloss data/SEGTHOR/val
-# $(INFR):
-# 	$(CC) inference.py --save_folder $@_tmp --model_weights $</best.pkl --data_folder $(word 2, $^)/img --num_classes 2 $(OPT)
-# 	$(CC) metrics.py --pred_folder $@_tmp/iter000 --gt_folder $(word 2, $^)/gt --save_folder $@_tmp  \
-# 		--grp_regex="$(G_RGX)" --num_classes=2
-# 	mv $@_tmp $@
+# Inference
+INFR = results/segthor/inference/fs_sanity results/segthor/inference/size_sanity
+results/segthor/inference/fs_sanity: results/segthor/fs data/SEGTHOR/test
+results/segthor/inference/size_sanity: results/segthor/sizeloss_e data/SEGTHOR/test
+$(INFR):
+	$(CC) inference.py --save_folder $@_tmp --model_weights $</best.pkl --data_folder $(word 2, $^)/img --num_classes 2 $(OPT)
+	$(CC) metrics.py --pred_folder $@_tmp/iter000 --gt_folder $(word 2, $^)/gt --save_folder $@_tmp  \
+		--grp_regex="$(G_RGX)" --num_classes=2
+	mv $@_tmp $@
 
 
 # Plotting
