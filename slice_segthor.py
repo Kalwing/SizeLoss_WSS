@@ -231,10 +231,10 @@ def main(args: argparse.Namespace):
             save_dir.mkdir(parents=True, exist_ok=True)
             img = imread(path)
             if type == 'gt':
-                img = np.array(img, dtype=np.uint8)
+                dt = np.uint8
             else:
-                img = np.array(img, dtype=np.uint16)
-            img = resize_(img, args.shape)
+                dt = np.uint16
+            img = resize_(img, args.shape).astype(dt)
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=UserWarning)
                 imsave(str(Path(save_dir, filename)), img)
