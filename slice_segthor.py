@@ -247,7 +247,7 @@ def get_args() -> argparse.Namespace:
 
     parser.add_argument('--img_dir', type=str, default="IMG")
     parser.add_argument('--gt_dir', type=str, default="GT")
-    parser.add_argument('--shape', type=int, nargs="+", default=(512, 512))
+    parser.add_argument('--shape', type=int, nargs="+", default=(256, 256))
     parser.add_argument('--retain', type=int, default=10, help="Number of retained patient for the validation data")
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--n_augment', type=int, default=0, help="Number of augmentation to create per image, only for the training set")
