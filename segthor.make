@@ -12,10 +12,9 @@ NET = ResidualUNet
 B_DATA = [('img', png_transform, False), ('gt', gt_transform, True)]
 
 SIZES = results/segthor/sizeloss_e results/segthor/sizeloss_r
-SIZES = results/prostate/sizeloss_e results/prostate/sizeloss_r
-TRN = results/prostate/sizeloss_e \
-   	  results/prostate/fs  \
-	  results/prostate/sizeloss_r \
+TRN = results/segthor/sizeloss_e \
+   	  results/segthor/fs  \
+	  results/segthor/sizeloss_r \
 	# results/segthor/fs results/segthor/partial results/segthor/presize \
 	# results/segthor/sizeloss_r \
 	# results/segthor/presize_upper
