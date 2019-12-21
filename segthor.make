@@ -11,8 +11,11 @@ G_RGX = (\d+_\w+__\d+)_\d+
 NET = ResidualUNet
 B_DATA = [('img', png_transform, False), ('gt', gt_transform, True)]
 
-SIZES = results/segthor/sizeloss_e results/segthor/sizeloss_r results/segthor/sizeloss_fs
-TRN = results/segthor/sizeloss_e results/segthor/fs
+SIZES = results/segthor/sizeloss_e results/segthor/sizeloss_r
+SIZES = results/prostate/sizeloss_e results/prostate/sizeloss_r
+TRN = results/prostate/sizeloss_e \
+   	  results/prostate/fs  \
+	  results/prostate/sizeloss_r \
 	# results/segthor/fs results/segthor/partial results/segthor/presize \
 	# results/segthor/sizeloss_r \
 	# results/segthor/presize_upper
@@ -100,14 +103,14 @@ data/SEGTHOR-aug-tiny: data/SEGTHOR-Aug
 
 
 # Training
-$(SIZES): OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1),\
+$(SIZES): OPT = --losses="[('DiceLoss', {'idc': [1]}, None, None, None, 1),\
 	('NaivePenalty', {'idc': [1]}, 'TagBounds', {'values': {1: [230, 7800]}, 'idc': [1]}, 'soft_size', 1e-2)]"
 # -losses: List of list of (loss_name, loss_params, bounds_name, bounds_params, fn, weight)"
 # --tentative of common bounds
 # Idc is for filtering, I don't quite get why we would want it but It's everywhere so..
 # From what i get from l.113 in main.py, 1e-2, the weight, is the lambda of the expression.
 # --Full supervision
-results/segthor/fs: OPT = --losses="[('CrossEntropy', {'idc': [0, 1]}, None, None, None, 1)]"
+results/segthor/fs: OPT = --losses="[('DiceLoss', {'idc': [0, 1]}, None, None, None, 1)]"
 results/segthor/partial: OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1)]"
 results/segthor/presize: OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1),\
 	('NaivePenalty', {'idc': [1]}, 'PreciseBounds', {'margin': 0.10, 'mode': 'percentage'}, 'soft_size', 1e-2)]"
