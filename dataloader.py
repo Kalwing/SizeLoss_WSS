@@ -136,7 +136,7 @@ class SliceDataset(Dataset):
                  C=4, in_memory: bool = False, spacing_dict: Dict[str, Tuple[float, float]] = None) -> None:
         self.folders: List[Path] = folders
         self.transforms: List[Callable[[D], Tensor]] = transforms
-        assert len(self.transforms) == len(self.folders)
+        assert len(self.transforms) == len(self.folders), F"{len(self.transforms)} {len(self.folders)}"
 
         self.are_hots: List[bool] = are_hots
         self.filenames: List[str] = filenames

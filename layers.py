@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.6
-
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -40,6 +40,40 @@ def upSampleConv(nin, nout, kernel_size=3, upscale=2, padding=1, bias=False):
 
 def conv_block(in_dim, out_dim, act_fn, kernel_size=3, stride=1, padding=1, dilation=1):
     model = nn.Sequential(
+        nn.Conv2d(in_dim, out_dim, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation),
+        nn.BatchNorm2d(out_dim),
+        act_fn,
+    )
+    return model
+
+
+class Coord_Block(nn.Module):
+    def __init__(self, in_dim, out_dim):
+        super().__init__()
+        print("Coord_Block in_dim", in_dim, out_dim)
+
+    def forward(self, input):
+        print("input_shape", input.shape)
+        batch_size, x_dim, y_dim = input.shape
+
+        xx_range = torch.range(y_dim, dtype=torch.int32)
+        xx_range.unsqueeze(0)
+        xx_range.repeat(x_dim, 1)
+        assert xx_range.shape == (x_dim, y_dim)
+        xx_range.unsqueeze(0)
+        xx_range.repeat(batch_size, 1, 1)
+        assert xx_range.shape == (batch_size, x_dim, y_dim)
+        assert xx_range[0, 0] == xx_range[0, 1] == xx_range[1, 0]
+        assert xx_range[0, 0, 0] != xx_range[0, 0, 1]
+        xx_range.type(dtype=torch.float32)
+        xx_range = 2 * xx_range / (x_dim - 1) - 1
+
+        return torch.cat((input, xx_range), -1)
+
+
+def coord_conv_block(in_dim, out_dim, act_fn, kernel_size=3, stride=1, padding=1, dilation=1):
+    model = nn.Sequential(
+        Coord_Block(in_dim, out_dim),
         nn.Conv2d(in_dim, out_dim, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation),
         nn.BatchNorm2d(out_dim),
         act_fn,

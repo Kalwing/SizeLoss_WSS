@@ -7,7 +7,8 @@ from torch import nn
 from torch import Tensor
 
 from layers import upSampleConv, conv_block_1, conv_block_3_3, conv_block_Asym
-from layers import conv_block, conv_block_3, maxpool, conv_decod_block
+from layers import conv_block, conv_block_3, maxpool, conv_decod_block, \
+                   coord_conv_block
 from layers import convBatch, residualConv  # Imports for UNEt
 
 
@@ -418,6 +419,25 @@ class Conv_residual_conv(nn.Module):
         return conv_3
 
 
+class CoordConv_residual_conv(nn.Module):
+    def __init__(self, in_dim, out_dim, act_fn):
+        super().__init__()
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        act_fn = act_fn
+        print("CoordConv_residual_conv", self.in_dim, self.out_dim)
+        self.conv_1 = coord_conv_block(self.in_dim, self.out_dim, act_fn)
+        self.conv_2 = conv_block_3(self.out_dim, self.out_dim, act_fn)
+        self.conv_3 = conv_block(self.out_dim, self.out_dim, act_fn)
+
+    def forward(self, input):
+        conv_1 = self.conv_1(input)
+        conv_2 = self.conv_2(conv_1)
+        res = conv_1 + conv_2
+        conv_3 = self.conv_3(res)
+        return conv_3
+
+
 class ResidualUNet(nn.Module):
     def __init__(self, input_nc, output_nc, ngf=32):
         super().__init__()
@@ -428,7 +448,7 @@ class ResidualUNet(nn.Module):
         act_fn_2 = nn.ReLU()
 
         # Encoder
-        self.down_1 = Conv_residual_conv(self.in_dim, self.out_dim, act_fn)
+        self.down_1 = CoordConv_residual_conv(self.in_dim, self.out_dim, act_fn)
         self.pool_1 = maxpool()
         self.down_2 = Conv_residual_conv(self.out_dim, self.out_dim * 2, act_fn)
         self.pool_2 = maxpool()
