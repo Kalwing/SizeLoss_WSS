@@ -87,7 +87,7 @@ class Coord_Block(nn.Module):
 
 def coord_conv_block(in_dim, out_dim, act_fn, kernel_size=3, stride=1, padding=1, dilation=1):
     model = nn.Sequential(
-        Coord_Block(in_dim, out_dim),
+        Coord_Block(),
         nn.Conv2d(in_dim, out_dim, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation),
         nn.BatchNorm2d(out_dim),
         act_fn,
