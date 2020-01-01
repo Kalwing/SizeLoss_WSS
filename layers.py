@@ -48,27 +48,41 @@ def conv_block(in_dim, out_dim, act_fn, kernel_size=3, stride=1, padding=1, dila
 
 
 class Coord_Block(nn.Module):
-    def __init__(self, in_dim, out_dim):
+    def __init__(self, centered=True):
+        self.centered = centered
         super().__init__()
-        print("Coord_Block in_dim", in_dim, out_dim)
 
     def forward(self, input):
-        print("input_shape", input.shape)
-        batch_size, x_dim, y_dim = input.shape
+        """
+        Concatenate additionals channels to the input. Those channel are simply
+        range increasing on each of the 2D dimensions.
+        """
+        batch_size, _nb_channel, x_dim, y_dim = input.shape
 
-        xx_range = torch.range(y_dim, dtype=torch.int32)
-        xx_range.unsqueeze(0)
-        xx_range.repeat(x_dim, 1)
+        xx_range = torch.arange(y_dim, dtype=torch.int32).repeat(x_dim, 1)
         assert xx_range.shape == (x_dim, y_dim)
-        xx_range.unsqueeze(0)
-        xx_range.repeat(batch_size, 1, 1)
+        xx_range = xx_range.repeat(batch_size, 1, 1)
         assert xx_range.shape == (batch_size, x_dim, y_dim)
-        assert xx_range[0, 0] == xx_range[0, 1] == xx_range[1, 0]
-        assert xx_range[0, 0, 0] != xx_range[0, 0, 1]
-        xx_range.type(dtype=torch.float32)
-        xx_range = 2 * xx_range / (x_dim - 1) - 1
+        assert xx_range[0, 0, 0] == xx_range[0, 1, 0]
+        assert xx_range[0, 0, 0] == xx_range[0, 0, 1] - 1  # range is on idx 3
+        xx_range = xx_range.unsqueeze(1).type(dtype=torch.float32)
+        xx_range = xx_range / (x_dim - 1)
 
-        return torch.cat((input, xx_range), -1)
+        yy_range = torch.arange(x_dim, dtype=torch.int32).repeat(y_dim, 1)
+        assert yy_range.shape == (y_dim, x_dim)
+        yy_range = yy_range.repeat(batch_size, 1, 1)
+        assert yy_range.shape == (batch_size, y_dim, x_dim)
+        assert yy_range[0, 0, 0] == yy_range[0, 1, 0]
+        assert yy_range[0, 0, 0] == yy_range[0, 0, 1] - 1  # range is on idy 3
+        yy_range = yy_range.unsqueeze(1).type(dtype=torch.float32)
+        yy_range = yy_range.permute(0, 1, 3, 2)
+        yy_range = yy_range / (y_dim - 1)
+
+        if self.centered:
+            xx_range = 2*xx_range - 1
+            yy_range = 2*yy_range - 1
+
+        return torch.cat((input, xx_range, yy_range), 1)  # (batch_size, channels, x, y)
 
 
 def coord_conv_block(in_dim, out_dim, act_fn, kernel_size=3, stride=1, padding=1, dilation=1):
