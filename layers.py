@@ -50,6 +50,8 @@ def conv_block(in_dim, out_dim, act_fn, kernel_size=3, stride=1, padding=1, dila
 class Coord_Block(nn.Module):
     def __init__(self, centered=True):
         self.centered = centered
+        use_cuda = torch.cuda.is_available()
+        self.device = torch.device('cuda:0' if use_cuda else 'cpu')
         super().__init__()
 
     def forward(self, input):
@@ -59,7 +61,7 @@ class Coord_Block(nn.Module):
         """
         batch_size, _nb_channel, x_dim, y_dim = input.shape
 
-        xx_range = torch.arange(y_dim, dtype=torch.int32).repeat(x_dim, 1)
+        xx_range = torch.arange(y_dim, dtype=torch.int32).to(self.device).repeat(x_dim, 1)
         assert xx_range.shape == (x_dim, y_dim)
         xx_range = xx_range.repeat(batch_size, 1, 1)
         assert xx_range.shape == (batch_size, x_dim, y_dim)
@@ -68,7 +70,7 @@ class Coord_Block(nn.Module):
         xx_range = xx_range.unsqueeze(1).type(dtype=torch.float32)
         xx_range = xx_range / (x_dim - 1)
 
-        yy_range = torch.arange(x_dim, dtype=torch.int32).repeat(y_dim, 1)
+        yy_range = torch.arange(x_dim, dtype=torch.int32).to(self.device).repeat(y_dim, 1)
         assert yy_range.shape == (y_dim, x_dim)
         yy_range = yy_range.repeat(batch_size, 1, 1)
         assert yy_range.shape == (batch_size, y_dim, x_dim)
@@ -88,7 +90,7 @@ class Coord_Block(nn.Module):
 def coord_conv_block(in_dim, out_dim, act_fn, kernel_size=3, stride=1, padding=1, dilation=1):
     model = nn.Sequential(
         Coord_Block(),
-        nn.Conv2d(in_dim, out_dim, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation),
+        nn.Conv2d(in_dim+2, out_dim, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation),
         nn.BatchNorm2d(out_dim),
         act_fn,
     )
