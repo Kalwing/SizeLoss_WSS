@@ -102,14 +102,14 @@ data/SEGTHOR-aug-tiny: data/SEGTHOR-Aug
 
 
 # Training
-$(SIZES): OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1),\
+$(SIZES): OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1), ('DiceLoss', {'idc': [0, 1]}, None, None, None, 1e-1),\
 	('NaivePenalty', {'idc': [1]}, 'TagBounds', {'values': {1: [230, 7800]}, 'idc': [1]}, 'soft_size', 1e-2)]"
 # -losses: List of list of (loss_name, loss_params, bounds_name, bounds_params, fn, weight)"
 # --tentative of common bounds
 # Idc is for filtering, I don't quite get why we would want it but It's everywhere so..
 # From what i get from l.113 in main.py, 1e-2, the weight, is the lambda of the expression.
 # --Full supervision
-results/segthor/fs: OPT = --losses="[('CrossEntropy', {'idc': [0, 1]}, None, None, None, 1)]"
+results/segthor/fs: OPT = --losses="[('CrossEntropy', {'idc': [0, 1]}, None, None, None, 1), ('DiceLoss', {'idc': [0, 1]}, None, None, None, 1e-1)]"
 results/segthor/partial: OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1)]"
 results/segthor/presize: OPT = --losses="[('CrossEntropy', {'idc': [1]}, None, None, None, 1),\
 	('NaivePenalty', {'idc': [1]}, 'PreciseBounds', {'margin': 0.10, 'mode': 'percentage'}, 'soft_size', 1e-2)]"
@@ -121,10 +121,6 @@ results/segthor/3d_sizeloss: OPT = --losses="[('CrossEntropy', {'idc': [1]}, Non
 	('BatchNaivePenalty', {'idc': [1], 'margin': 0}, 'PreciseBounds', {'margin': 0, 'mode': 'percentage'}, 'soft_size', 1e-2)]" \
 	--group_train
 results/segthor/3d_sizeloss: NET = ENet
-
-
-results/segthor/sizeloss_fs: data/SEGTHOR-Aug/train/gt data/SEGTHOR-Aug/val/gt
-results/segthor/sizeloss_fs: DATA = --folders="$(B_DATA)+[('gt', gt_transform, True)]"
 
 results/segthor/fs: data/SEGTHOR-Aug/train/gt data/SEGTHOR-Aug/val/gt
 results/segthor/fs: DATA = --folders="$(B_DATA)+[('gt', gt_transform, True)]"
