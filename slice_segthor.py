@@ -151,7 +151,7 @@ def save_slices(img_p: Path, gt_p: Path,
                 with warnings.catch_warnings():
                     warnings.filterwarnings("ignore", category=UserWarning)
                     imsave(str(Path(save_dir, filename)), data)
-
+    print("p_id:", p_id, " z size:", z_size)
     return sizes_2d.sum(), sizes_2d[sizes_2d > 0].min(), sizes_2d.max()
 
 
@@ -218,26 +218,27 @@ def main(args: argparse.Namespace):
         with open(os.path.join(dest_path, 'sizes.txt'), 'w') as fout:
             fout.write(F"2d sizes:\n\tmin:{sizes_2d_min.min()} \tmax:{sizes_2d_max.max()}\n")
             fout.write(F"3d sizes:\n\tmin:{sizes_3d.min()} \tmean:{sizes_3d.mean()} \tmax:{sizes_3d.max()}")
+            print("a")
     # T: Making Test Set
-    print(F"Generating test set in {dest_path}/test")
-    resize_: Callable = partial(resize, mode="constant", preserve_range=True, anti_aliasing=False)
-    for img_path, gt_path in test_paths:
-        print(img_path)
-        dest_dir = Path(dest_path, 'test')
-        print(img_path.name)
-        filename = img_path.name
-        for type, path in zip(['img', 'gt'], [img_path, gt_path]):
-            save_dir = Path(dest_dir, type)
-            save_dir.mkdir(parents=True, exist_ok=True)
-            img = imread(path)
-            if type == 'gt':
-                dt = np.uint8
-            else:
-                dt = np.uint16
-            img = resize_(img, args.shape).astype(dt)
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", category=UserWarning)
-                imsave(str(Path(save_dir, filename)), img)
+    # print(F"Generating test set in {dest_path}/test")
+    # resize_: Callable = partial(resize, mode="constant", preserve_range=True, anti_aliasing=False)
+    # for img_path, gt_path in test_paths:
+    #     print(img_path)
+    #     dest_dir = Path(dest_path, 'test')
+    #     print(img_path.name)
+    #     filename = img_path.name
+    #     for type, path in zip(['img', 'gt'], [img_path, gt_path]):
+    #         save_dir = Path(dest_dir, type)
+    #         save_dir.mkdir(parents=True, exist_ok=True)
+    #         img = imread(path)
+    #         if type == 'gt':
+    #             dt = np.uint8
+    #         else:
+    #             dt = np.uint16
+    #         img = resize_(img, args.shape).astype(dt)
+    #         with warnings.catch_warnings():
+    #             warnings.filterwarnings("ignore", category=UserWarning)
+    #             imsave(str(Path(save_dir, filename)), img)
 
 
 def get_args() -> argparse.Namespace:
@@ -265,3 +266,4 @@ if __name__ == "__main__":
     random.seed(args.seed)
 
     main(args)
+    print("b")
