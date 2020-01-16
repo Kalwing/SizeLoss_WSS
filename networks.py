@@ -442,7 +442,7 @@ class ResidualUNet(nn.Module):
     def __init__(self, input_nc, output_nc, ngf=32):
         super().__init__()
         self.in_dim = input_nc
-        self.out_dim = ngf
+        self.out_dim = ngf + 2
         self.final_out_dim = output_nc
         act_fn = nn.LeakyReLU(0.2, inplace=True)
         act_fn_2 = nn.ReLU()
@@ -450,25 +450,25 @@ class ResidualUNet(nn.Module):
         # Encoder
         self.down_1 = CoordConv_residual_conv(self.in_dim, self.out_dim, act_fn)
         self.pool_1 = maxpool()
-        self.down_2 = Conv_residual_conv(self.out_dim, self.out_dim * 2, act_fn)
+        self.down_2 = CoordConv_residual_conv(self.out_dim, self.out_dim * 2, act_fn)
         self.pool_2 = maxpool()
-        self.down_3 = Conv_residual_conv(self.out_dim * 2, self.out_dim * 4, act_fn)
+        self.down_3 = CoordConv_residual_conv(self.out_dim * 2, self.out_dim * 4, act_fn)
         self.pool_3 = maxpool()
-        self.down_4 = Conv_residual_conv(self.out_dim * 4, self.out_dim * 8, act_fn)
+        self.down_4 = CoordConv_residual_conv(self.out_dim * 4, self.out_dim * 8, act_fn)
         self.pool_4 = maxpool()
 
         # Bridge between Encoder-Decoder
-        self.bridge = Conv_residual_conv(self.out_dim * 8, self.out_dim * 16, act_fn)
+        self.bridge = CoordConv_residual_conv(self.out_dim * 8, self.out_dim * 16, act_fn)
 
         # Decoder
         self.deconv_1 = conv_decod_block(self.out_dim * 16, self.out_dim * 8, act_fn_2)
-        self.up_1 = Conv_residual_conv(self.out_dim * 8, self.out_dim * 8, act_fn_2)
+        self.up_1 = CoordConv_residual_conv(self.out_dim * 8, self.out_dim * 8, act_fn_2)
         self.deconv_2 = conv_decod_block(self.out_dim * 8, self.out_dim * 4, act_fn_2)
-        self.up_2 = Conv_residual_conv(self.out_dim * 4, self.out_dim * 4, act_fn_2)
+        self.up_2 = CoordConv_residual_conv(self.out_dim * 4, self.out_dim * 4, act_fn_2)
         self.deconv_3 = conv_decod_block(self.out_dim * 4, self.out_dim * 2, act_fn_2)
-        self.up_3 = Conv_residual_conv(self.out_dim * 2, self.out_dim * 2, act_fn_2)
+        self.up_3 = CoordConv_residual_conv(self.out_dim * 2, self.out_dim * 2, act_fn_2)
         self.deconv_4 = conv_decod_block(self.out_dim * 2, self.out_dim, act_fn_2)
-        self.up_4 = Conv_residual_conv(self.out_dim, self.out_dim, act_fn_2)
+        self.up_4 = CoordConv_residual_conv(self.out_dim, self.out_dim, act_fn_2)
 
         self.out = nn.Conv2d(self.out_dim, self.final_out_dim, kernel_size=3, stride=1, padding=1)
 
