@@ -1,4 +1,7 @@
 # Constrained-CNN losses for weakly supervised segmentation
+
+> **Note by Kalwing:** This fork is also used to push on the training server. Some work may be unfinished or unusable. Please ask me if you encounter an error.
+
 Code of our submission at [MIDL 2018](https://openreview.net/forum?id=BkIBHb2sG) and its [Medical Image Analysis](https://doi.org/10.1016/j.media.2019.02.009) journal extension. Video of the MIDL talk is available: https://www.youtube.com/watch?v=2-0Ey5-If7o
 
 ## Requirements
