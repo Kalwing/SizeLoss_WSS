@@ -162,6 +162,16 @@ def conv_decod_block(in_dim, out_dim, act_fn):
     return model
 
 
+def coord_conv_decod_block(in_dim, out_dim, act_fn):
+    model = nn.Sequential(
+        Coord_Block(),
+        nn.ConvTranspose2d(in_dim+2, out_dim, kernel_size=3, stride=2, padding=1, output_padding=1),
+        nn.BatchNorm2d(out_dim),
+        act_fn,
+    )
+    return model
+
+
 def maxpool():
     pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
     return pool

@@ -8,7 +8,7 @@ from torch import Tensor
 
 from layers import upSampleConv, conv_block_1, conv_block_3_3, conv_block_Asym
 from layers import conv_block, conv_block_3, maxpool, conv_decod_block, \
-                   coord_conv_block
+                   coord_conv_block, coord_conv_decod_block
 from layers import convBatch, residualConv  # Imports for UNEt
 
 
@@ -442,7 +442,7 @@ class ResidualUNet(nn.Module):
     def __init__(self, input_nc, output_nc, ngf=32):
         super().__init__()
         self.in_dim = input_nc
-        self.out_dim = ngf + 2
+        self.out_dim = ngf
         self.final_out_dim = output_nc
         act_fn = nn.LeakyReLU(0.2, inplace=True)
         act_fn_2 = nn.ReLU()
@@ -461,13 +461,13 @@ class ResidualUNet(nn.Module):
         self.bridge = CoordConv_residual_conv(self.out_dim * 8, self.out_dim * 16, act_fn)
 
         # Decoder
-        self.deconv_1 = conv_decod_block(self.out_dim * 16, self.out_dim * 8, act_fn_2)
+        self.deconv_1 = coord_conv_decod_block(self.out_dim * 16, self.out_dim * 8, act_fn_2)
         self.up_1 = CoordConv_residual_conv(self.out_dim * 8, self.out_dim * 8, act_fn_2)
-        self.deconv_2 = conv_decod_block(self.out_dim * 8, self.out_dim * 4, act_fn_2)
+        self.deconv_2 = coord_conv_decod_block(self.out_dim * 8, self.out_dim * 4, act_fn_2)
         self.up_2 = CoordConv_residual_conv(self.out_dim * 4, self.out_dim * 4, act_fn_2)
-        self.deconv_3 = conv_decod_block(self.out_dim * 4, self.out_dim * 2, act_fn_2)
+        self.deconv_3 = coord_conv_decod_block(self.out_dim * 4, self.out_dim * 2, act_fn_2)
         self.up_3 = CoordConv_residual_conv(self.out_dim * 2, self.out_dim * 2, act_fn_2)
-        self.deconv_4 = conv_decod_block(self.out_dim * 2, self.out_dim, act_fn_2)
+        self.deconv_4 = coord_conv_decod_block(self.out_dim * 2, self.out_dim, act_fn_2)
         self.up_4 = CoordConv_residual_conv(self.out_dim, self.out_dim, act_fn_2)
 
         self.out = nn.Conv2d(self.out_dim, self.final_out_dim, kernel_size=3, stride=1, padding=1)
