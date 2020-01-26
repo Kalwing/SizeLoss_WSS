@@ -7,7 +7,7 @@ EPC = 200
 
 G_RGX = (patient\d+_\d+)_\d+
 # G_RGX = (\d+_patient\d+_\d+)_\d+
-NET = ENet
+NET = ResidualUNet
 # NET = ResidualUNet
 # NET = Dummy
 B_DATA = [('img', png_transform, False), ('gt', gt_transform, True)]
@@ -16,10 +16,10 @@ PATHAKS = results/midl/pathak_loose results/midl/pathak_595 \
 	results/midl/pathak_precise_upper results/midl/pathak_precise
 HYBRIDS = results/midl/hybrid5_595 results/midl/hybrid10_595 results/midl/hybrid25_595 \
 		  results/midl/fs5		   results/midl/fs10		 results/midl/fs25
-TRN = results/midl/fs results/midl/partial \
-	results/midl/size_595 results/midl/loose \
-	results/midl/presize results/midl/presize_upper \
-	results/midl/3d_sizeloss results/midl/3d_sizeloss_random \
+TRN = results/midl/fs results/midl/random results/midl/erosion \
+	# results/midl/size_595 results/midl/loose \
+	# results/midl/presize results/midl/presize_upper \
+	# results/midl/3d_sizeloss results/midl/3d_sizeloss_random \
 	$(HYBRIDS)
 
 
