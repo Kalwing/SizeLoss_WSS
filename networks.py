@@ -426,7 +426,7 @@ class CoordConv_residual_conv(nn.Module):
         self.out_dim = out_dim
         act_fn = act_fn
         print("CoordConv_residual_conv", self.in_dim, self.out_dim)
-        self.conv_1 = coord_conv_block(self.in_dim, self.out_dim, act_fn)
+        self.conv_1 = coord_conv_block(self.in_dim, self.out_dim, act_fn, use_r=True)
         self.conv_2 = conv_block_3(self.out_dim, self.out_dim, act_fn)
         self.conv_3 = conv_block(self.out_dim, self.out_dim, act_fn)
 
