@@ -53,7 +53,7 @@ class Coord_Block(nn.Module):
         use_cuda = torch.cuda.is_available()
         self.device = torch.device('cuda:0' if use_cuda else 'cpu')
         self.use_r_ = use_r
-        if use_r: print(self, "use r coord")
+        if use_r: print("use r coord")
         super().__init__()
 
     def forward(self, input):
@@ -96,9 +96,10 @@ class Coord_Block(nn.Module):
 
 
 def coord_conv_block(in_dim, out_dim, act_fn, kernel_size=3, stride=1, padding=1, dilation=1, use_r=False):
+    extra = 2 if not use_r else 3
     model = nn.Sequential(
         Coord_Block(use_r=use_r),
-        nn.Conv2d(in_dim+2, out_dim, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation),
+        nn.Conv2d(in_dim+extra, out_dim, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation),
         nn.BatchNorm2d(out_dim),
         act_fn,
     )
@@ -171,9 +172,10 @@ def conv_decod_block(in_dim, out_dim, act_fn):
 
 
 def coord_conv_decod_block(in_dim, out_dim, act_fn, use_r=True):
+    extra = 2 if not use_r else 3
     model = nn.Sequential(
         Coord_Block(use_r=use_r),
-        nn.ConvTranspose2d(in_dim+2, out_dim, kernel_size=3, stride=2, padding=1, output_padding=1),
+        nn.ConvTranspose2d(in_dim+extra, out_dim, kernel_size=3, stride=2, padding=1, output_padding=1),
         nn.BatchNorm2d(out_dim),
         act_fn,
     )
