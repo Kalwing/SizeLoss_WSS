@@ -138,7 +138,8 @@ results/midl/upper_595: OPT = --losses="[('CrossEntropy', {'idc': [3]}, None, No
 	('NaivePenalty', {'idc': [3]}, 'TagBounds', {'values': {3: [1, 2000]}, 'idc': [3]}, 'soft_size', 1e-2)]"
 results/midl/loose: OPT = --losses="[('CrossEntropy', {'idc': [3]}, None, None, None, 1),\
 	('NaivePenalty', {'idc': [3]}, 'TagBounds', {'values': {3: [1, 65000]}, 'idc': [3]}, 'soft_size', 1e-2)]"
-results/midl/fs: OPT = --losses="[('CrossEntropy', {'idc': [0, 3]}, None, None, None, 1)]"
+results/midl/fs: OPT = --losses="[('CrossEntropy', {'idc': [3]}, None, None, None, 1),\
+	('NaivePenalty', {'idc': [3]}, 'TagBounds', {'values': {3: [97.9, 1722]}, 'idc': [3]}, 'soft_size', 1e-2)]"
 results/midl/partial: OPT = --losses="[('CrossEntropy', {'idc': [3]}, None, None, None, 1)]"
 results/midl/presize_aug: OPT = --losses="[('CrossEntropy', {'idc': [3]}, None, None, None, 1),\
 	('NaivePenalty', {'idc': [3]}, 'PreciseBounds', {'margin': 0.10, 'mode': 'percentage'}, 'soft_size', 0.05)]" \
